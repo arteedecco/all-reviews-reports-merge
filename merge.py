@@ -1,26 +1,23 @@
-import logging, sys, glob, click, openpyxl
+import logging, sys, glob, re, click, openpyxl
 
 
 logging.basicConfig(level=logging.DEBUG)
 
 
 def find_all_reports(dir):
-    reports = {
-        'all_reviews': {
-            'pattern': '{0}/*_AllReviewsReport_*.xls'.format(dir),
-            'files': None
-        },
-        'all_reviews_by_contributor': {
-            'pattern':
-                '{0}/*_AllReviewsbyContributorReport_*.xls'.format(dir),
-            'files': None
-        }
-    }
-    logging.debug(reports)
-    for r in reports:
-        logging.debug(r)
-        reports[r]['files'] = glob.glob(reports[r]['pattern'])
-    logging.debug(reports)
+    # 'AllReviewsReport', 'AllReviewsbyContributorReport'
+    all_reviews_reports = glob.glob(
+        '{0}/*{1}*.xls'.format(dir, 'AllReviewsReport'))
+    logging.debug(all_reviews_reports)
+    # find matching AllReviewsbyContributorReport
+    for r in all_reviews_reports:
+        fname = re.sub('{0}/'.format(dir), '', r)
+        logging.debug(fname)
+        mname = re.sub('AllReviewsReport',
+                       'AllReviewsbyContributorReport',
+                       fname)
+        logging.debug(mname)
+
 
 
 def get_emails():
