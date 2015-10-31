@@ -23,10 +23,6 @@ class UserEmail(Base):
     user_id = Column(String(128))
     email = Column(String(320))
 
-    def __repr__(self):
-        "<UserEmail(user_id='{0}', email='{1}')>".format(
-            self.user_id, self.email)
-
 
 Base.metadata.create_all(engine)
 
@@ -53,8 +49,35 @@ def get_emails(reports):
             logging.debug(ws.row(3))
             logging.debug(ws.row(3)[0].value)
 
-            location = [{'row': row, 'col': col} for col in range(ws.ncols) for row in range(ws.nrows) if ws.cell_value(row, col) == 'User Email Address']
-            logging.debug(location)
+            email_loc = [{'row': row, 'col': col}
+                         for col in range(ws.ncols)
+                         for row in range(ws.nrows)
+                         if ws.cell_value(row, col) == 'User Email Address']
+
+            if len(email_loc) > 1:
+                raise ValueError('More than one column in the All Reviews\
+                    Report "{0}" was named "{1}"'.format(
+                        r,
+                        'User Email Address'))
+
+            userid_loc = [{'row': row, 'col': col}
+                          for col in range(ws.ncols)
+                          for row in range(ws.nrows)
+                          if ws.cell_value(row, col) == 'User ID']
+
+            if len(userid_loc) > 1:
+                raise ValueError('More than one column in the All Reviews\
+                    Report "{0}" was named "{1}"'.format(
+                        r,
+                        'User ID'))
+
+            emails = [UserEmail(
+                user_id=ws.cell_value(row, userid_loc[0]['col']),
+                email=ws.cell_value(row, email_loc[0]['col']))
+                for row in range(email_loc[0]['row'] + 1, ws.nrows)]
+
+            logging.debug(emails)
+
 
 
 def dedupe_emails():
