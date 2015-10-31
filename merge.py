@@ -2,6 +2,7 @@ import logging, glob, re, click
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import distinct
 from openpyxl import load_workbook
 from xlrd import *
 
@@ -77,6 +78,14 @@ def get_emails(reports):
                 for row in range(email_loc[0]['row'] + 1, ws.nrows)]
 
             logging.debug(emails)
+            logging.debug(dir(emails[0]))
+
+            session = Session()
+
+            session.add_all(emails)
+            session.commit()
+
+            logging.debug(session.query(UserEmail).distinct(UserEmail.email).group_by(UserEmail.email).count())
 
 
 
